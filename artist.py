@@ -14,24 +14,26 @@ import random
 load_dotenv()
 SERPER_API_KEY = os.getenv("SERPER_API_KEY")
 
-# API 키 리스트 로드 (Rotation - 4개)
+# API 키 5개 로드
 GEMINI_KEYS = []
 if os.environ.get("GEMINI_API_KEY"): GEMINI_KEYS.append(os.environ.get("GEMINI_API_KEY"))
 if os.environ.get("GEMINI_API_KEY_2"): GEMINI_KEYS.append(os.environ.get("GEMINI_API_KEY_2"))
 if os.environ.get("GEMINI_API_KEY_3"): GEMINI_KEYS.append(os.environ.get("GEMINI_API_KEY_3"))
 if os.environ.get("GEMINI_API_KEY_4"): GEMINI_KEYS.append(os.environ.get("GEMINI_API_KEY_4"))
+if os.environ.get("GEMINI_API_KEY_5"): GEMINI_KEYS.append(os.environ.get("GEMINI_API_KEY_5"))
 
 if not GEMINI_KEYS:
     print("FATAL: .env 파일에서 GEMINI_API_KEY를 찾을 수 없습니다.")
     sys.exit(1)
 
 current_key_index = 0
-print(f"🔑 [Artist] 로드된 Gemini API 키 개수: {len(GEMINI_KEYS)}")
+print(f"🔑 [Artist] 로드된 Gemini API 키 개수: {len(GEMINI_KEYS)}개")
 
 OUTPUT_DIR = "images"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-MODEL_NAME = "gemini-2.0-flash" 
+# [설정] 3.0 모델 적용 (이미지 생성 시도)
+MODEL_NAME = "gemini-3-flash-preview"
 
 # 주요 뉴스 소스 리스트
 MAJOR_NEWS_SITES = [
@@ -168,9 +170,10 @@ def download_best_available_image(results, file_name, target_ratio):
 
 def generate_image(prompt, file_name):
     global current_key_index
-    print(f"🎨 AI 그리기 시도... ({prompt[:30]}...)")
+    print(f"🎨 AI 그리기 시도 (3.0)... ({prompt[:30]}...)")
     attempts = 0
-    max_attempts = len(GEMINI_KEYS)
+    max_attempts = len(GEMINI_KEYS) * 2
+    
     while attempts < max_attempts:
         current_key = GEMINI_KEYS[current_key_index]
         try:
@@ -187,13 +190,16 @@ def generate_image(prompt, file_name):
         except Exception as e:
             error_msg = str(e)
             if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "QuotaExceeded" in error_msg:
-                print(f"      ⚠️ [Key {current_key_index+1}] 쿼터 초과! 다음 키로 교체...")
+                print(f"      ⚠️ [Key #{current_key_index+1}] 쿼터 초과! 다음 키로 교체...")
                 current_key_index = (current_key_index + 1) % len(GEMINI_KEYS)
                 attempts += 1
+                time.sleep(2)
                 continue
             else:
                 print(f"      ❌ 그리기 오류: {e}")
-                return False
+                attempts += 1
+                current_key_index = (current_key_index + 1) % len(GEMINI_KEYS)
+                continue
     return False
 
 # ---------------------------
@@ -219,7 +225,7 @@ def main():
     story_content = data[0] if isinstance(data, list) else data
     scenes = story_content.get("scenes", [])
     
-    print(f"=== 화가 에이전트 시작 (Smart Skip Mode) ===")
+    print(f"=== 화가 에이전트 시작 (Experimental 3.0 Mode - 5 Keys) ===")
     
     image_sources = {}
     article_images = []
@@ -234,19 +240,18 @@ def main():
         idx = i + 1
         base_prompt = scene.get("image_prompt")
         
-        # [NEW] Intro 스킵 로직
+        # Intro 스킵 로직
         if is_shorts and is_news and i == 0 and os.path.exists("assets/intro.mp4"):
             print(f"   ⏩ Scene {idx} (Intro): 이미지 다운로드 생략 (Use assets/intro.mp4)")
             continue
 
-        # [NEW] Outro 스킵 로직
+        # Outro 스킵 로직
         if is_shorts and is_news and i == len(scenes) - 1 and os.path.exists("assets/outro.mp4"):
             print(f"   ⏩ Scene {idx} (Outro): 이미지 다운로드 생략 (Use assets/outro.mp4)")
             continue
 
         if not base_prompt: continue
         
-        # --- 이하 기존 로직 ---
         file_name = f"image_{idx}.png"
         success = False
         

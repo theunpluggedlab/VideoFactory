@@ -22,18 +22,17 @@ except ImportError:
     print("   👉 자동으로 Edge TTS (무료) 모드로 전환합니다.")
     HAS_GEMINI_TTS = False
 
-# [핵심] API 키 4개 로드 (환경변수에서 가져옴)
+# API 키 5개 로드
 GEMINI_KEYS = []
 if os.environ.get("GEMINI_API_KEY"): GEMINI_KEYS.append(os.environ.get("GEMINI_API_KEY"))
 if os.environ.get("GEMINI_API_KEY_2"): GEMINI_KEYS.append(os.environ.get("GEMINI_API_KEY_2"))
 if os.environ.get("GEMINI_API_KEY_3"): GEMINI_KEYS.append(os.environ.get("GEMINI_API_KEY_3"))
 if os.environ.get("GEMINI_API_KEY_4"): GEMINI_KEYS.append(os.environ.get("GEMINI_API_KEY_4"))
+if os.environ.get("GEMINI_API_KEY_5"): GEMINI_KEYS.append(os.environ.get("GEMINI_API_KEY_5"))
 
-# 키가 하나도 없으면 경고
 if not GEMINI_KEYS and HAS_GEMINI_TTS:
     print("❌ 경고: .env 파일에서 GEMINI_API_KEY를 찾을 수 없습니다.")
 
-# 전역 변수로 키 인덱스 관리 (순환을 위해)
 current_key_index = 0
 print(f"🔑 [Narrator] 로드된 Gemini API 키 개수: {len(GEMINI_KEYS)}개")
 
@@ -49,7 +48,7 @@ VOICE_DB = {
     }
 }
 
-# 인자 설정 (언어, 성별)
+# 인자 설정
 language = "ko"
 if len(sys.argv) > 1: language = sys.argv[1]
 
@@ -61,7 +60,7 @@ selected_gemini_voice = VOICE_DB[language][gender]["gemini"]
 selected_edge_voice = VOICE_DB[language][gender]["edge"]
 
 print(f"🎙️ 성우 설정: 언어={language}, 성별={gender}")
-print(f"   [Primary] Gemini: {selected_gemini_voice}")
+print(f"   [Primary] Gemini 3.0 Preview: {selected_gemini_voice}")
 print(f"   [Fallback] Edge TTS: {selected_edge_voice}")
 
 FFMPEG_EXE = imageio_ffmpeg.get_ffmpeg_exe()
@@ -98,21 +97,19 @@ def save_pcm_as_wav(pcm_data, filename, sample_rate=24000):
         wf.writeframes(pcm_data)
 
 def generate_audio_gemini(text, output_file):
-    """
-    Gemini API 키 4개를 순차적으로 시도합니다.
-    429(쿼터) 뿐만 아니라 400(기능 미지원) 에러도 키 문제로 간주하고 넘깁니다.
-    """
     if not HAS_GEMINI_TTS or not GEMINI_KEYS: return False
     global current_key_index
     
-    # 총 키 개수만큼 시도 (예: 4개면 4번 시도)
-    max_attempts = len(GEMINI_KEYS)
+    max_attempts = len(GEMINI_KEYS) * 2
     attempts = 0
+    
+    # [설정] 3.0 모델 적용
+    MODEL_NAME = "gemini-3-flash-preview"
     
     while attempts < max_attempts:
         current_key = GEMINI_KEYS[current_key_index]
         try:
-            print(f"   ⏳ [Gemini] 요청 중... (Key #{current_key_index+1} 사용)")
+            print(f"   ⏳ [Gemini 3.0] 요청 중... (Key #{current_key_index+1})")
             client = genai.Client(api_key=current_key)
             
             config = types.GenerateContentConfig(
@@ -124,8 +121,9 @@ def generate_audio_gemini(text, output_file):
                 )
             )
             
+            # 3.0 모델 호출
             response = client.models.generate_content(
-                model="gemini-2.0-flash-exp", 
+                model=MODEL_NAME, 
                 contents=text, 
                 config=config
             )
@@ -146,29 +144,28 @@ def generate_audio_gemini(text, output_file):
         except Exception as e:
             error_str = str(e)
             
-            # [수정된 핵심 로직] 429(쿼터), 400(Invalid), 500(서버) 등 모든 에러에 대해 다음 키 시도
-            # 특정 키가 오디오 기능을 지원하지 않는 경우(400)도 포함
             is_retryable = False
+            # 쿼터(429), 미지원(400), 서버오류(5xx) 모두 키 교체 대상
             if "429" in error_str or "RESOURCE" in error_str or "quota" in error_str.lower():
+                print(f"      ⚠️ [Key #{current_key_index+1}] 쿼터 초과. 다음 키로 이동합니다.")
                 is_retryable = True
-                print(f"      ⚠️ [Key #{current_key_index+1}] 쿼터 초과! 다음 키로 교체합니다.")
-            elif "400" in error_str or "INVALID_ARGUMENT" in error_str:
+            elif "400" in error_str or "INVALID" in error_str:
+                print(f"      ⚠️ [Key #{current_key_index+1}] 3.0 모델이 오디오를 미지원할 수 있습니다(400).")
                 is_retryable = True
-                print(f"      ⚠️ [Key #{current_key_index+1}] 오디오 미지원 키/모델(400). 다음 키로 교체합니다.")
             elif "500" in error_str or "503" in error_str:
+                print(f"      ⚠️ [Key #{current_key_index+1}] 구글 서버 오류. 다음 키로 이동합니다.")
                 is_retryable = True
-                print(f"      ⚠️ [Key #{current_key_index+1}] 구글 서버 일시 오류(5xx). 다음 키로 교체합니다.")
             
             if is_retryable:
                 current_key_index = (current_key_index + 1) % len(GEMINI_KEYS)
                 attempts += 1
-                time.sleep(1) 
+                time.sleep(2) 
                 continue
             else:
                 print(f"      ❌ [Gemini] 치명적 오류: {error_str}")
                 return False 
                 
-    print(f"      ❌ 모든 Gemini 키({len(GEMINI_KEYS)}개)가 실패했습니다.")
+    print(f"      ❌ 모든 Gemini 키({len(GEMINI_KEYS)}개) 시도 실패.")
     return False
 
 async def generate_audio_edge(text, output_file):
@@ -198,7 +195,7 @@ def main():
     story_content = data[0] if isinstance(data, list) else data
     scenes = story_content.get("scenes", [])
     
-    print(f"=== 성우 에이전트 시작 (4-Key Full Rotation) ===")
+    print(f"=== 성우 에이전트 시작 (Experimental 3.0 Mode - 5 Keys) ===")
     
     failed_count = 0
     
@@ -207,7 +204,7 @@ def main():
         text = scene.get("narration")
         if not text: continue
             
-        clean_text = text.replace("*", "") 
+        clean_text = text.replace("*", "")
         if not clean_text: continue
              
         file_name = f"audio_{idx}.mp3"
@@ -218,18 +215,21 @@ def main():
         
         print(f"\n🎤 [{idx}/{len(scenes)}] 녹음: {clean_text[:20]}...")
         
-        # 1. Gemini 시도 (키 4개 순환)
+        # 1. Gemini 시도
         raw_source_path = None
         if generate_audio_gemini(clean_text, temp_wav):
             raw_source_path = temp_wav
+            # 성공 시 쿼터 보호를 위해 3초 대기
+            print("      💤 최신 모델 보호 대기 (3s)...")
+            time.sleep(3)
         
-        # 2. 실패시 Edge TTS (최후의 보루)
+        # 2. 실패시 Edge TTS
         if not raw_source_path:
             print("   👉 Edge TTS로 전환...")
             if asyncio.run(generate_audio_edge(clean_text, temp_mp3)):
                 raw_source_path = temp_mp3
             
-        # 3. 속도 변환 및 파일 정리
+        # 3. 정리
         if raw_source_path:
             if speed_up_audio(raw_source_path, final_path, speed=1.2):
                 pass

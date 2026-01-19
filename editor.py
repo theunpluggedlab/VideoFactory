@@ -8,6 +8,11 @@ from PIL import Image, ImageFont, ImageDraw
 import shutil
 from datetime import datetime
 
+# [핵심 수정] Pillow 최신 버전 호환성 패치
+# Pillow 10.0.0부터 ANTIALIAS가 삭제되었으므로, 이를 LANCZOS로 매핑해줍니다.
+if not hasattr(Image, 'ANTIALIAS'):
+    Image.ANTIALIAS = Image.LANCZOS
+
 # MoviePy Import (v1.0.3 호환)
 try:
     from moviepy.editor import *
@@ -144,7 +149,7 @@ def create_video():
 
     print(f"=== 편집(Editor) 시작 (Mode: {mode}) ===")
     
-    # 3단 분리 저장소
+    # 3단 분리 저장소 (Intro / Body / Outro)
     intro_clip_final = None
     outro_clip_final = None
     body_clips = []
@@ -176,14 +181,14 @@ def create_video():
         if is_intro_scene and os.path.exists(intro_path):
             print("   👉 Intro 영상 적용 (Looping)")
             vid = VideoFileClip(intro_path)
-            # 오디오 제거 후 루핑 (나래이션과 섞임 방지)
+            # Intro: 오디오 제거 후 루핑 (나래이션 오디오가 덮일 예정)
             visual_clip = vid.without_audio().loop(duration=duration)
             is_video_asset = True
 
         elif is_outro_scene and os.path.exists(outro_path):
             print("   👉 Outro 영상 적용 (Trimming)")
             vid = VideoFileClip(outro_path)
-            # 오디오 제거
+            # Outro: 오디오 제거
             vid = vid.without_audio()
             
             if vid.duration > duration:
@@ -209,7 +214,7 @@ def create_video():
             black_bg = ColorClip(size=final_size, color=(0, 0, 0)).set_duration(duration)
             layers.append(black_bg)
             
-            # 리사이즈 및 중앙 정렬
+            # 리사이즈 및 중앙 정렬 (Resize 에러 해결: 패치 적용됨)
             resized_visual = visual_clip.resize(width=720)
             centered_visual = resized_visual.set_position("center")
             layers.append(centered_visual)
@@ -229,7 +234,7 @@ def create_video():
                 source_clip = source_clip.set_position(("right", source_y)).set_duration(duration)
                 layers.append(source_clip)
 
-        # 자막 표시 (Scene별 자막)
+        # 자막 표시 (모든 Scene 적용 - Intro/Outro 포함)
         if is_shorts:
             narration = scene.get("narration", "")
             if narration:
@@ -240,7 +245,7 @@ def create_video():
                 txt_clip = txt_clip.set_position(("center", 950)).set_duration(duration)
                 layers.append(txt_clip)
 
-        # 개별 Scene 최종 합성
+        # 개별 Scene 최종 합성 (나래이션 오디오 포함)
         scene_composite = CompositeVideoClip(layers, size=final_size).set_audio(audio_clip)
 
         # ----------------------------------------------------------------
@@ -258,14 +263,14 @@ def create_video():
         return
 
     # ----------------------------------------------------------------
-    # 4. 최종 연결 (Concatenate) - 순서 보장 및 오버레이 분리
+    # 4. 최종 연결 (Concatenate)
     # ----------------------------------------------------------------
     print("🎞️ 클립 병합 및 타이틀 적용 중...")
     
     # [1] 본문 병합
     body_concat = concatenate_videoclips(body_clips, method="compose")
     
-    # [2] 본문에만 타이틀 오버레이 적용
+    # [2] 본문에만 타이틀 오버레이 적용 (Intro/Outro 침범 방지)
     if is_shorts and is_news:
         print("   📝 본문에만 타이틀 적용")
         title_clip = create_highlighted_text_clip(
