@@ -18,7 +18,6 @@ def run_step(script_name, args=[]):
     
     cmd = [sys.executable, script_name] + args
     try:
-        # 실시간 로그 출력을 위해 check=True 사용
         subprocess.run(cmd, check=True)
         print(f"\n✅ [Step: {script_name}] 완료!")
         return True
@@ -27,7 +26,6 @@ def run_step(script_name, args=[]):
         return False
 
 def crawl_url_and_save(url):
-    """URL에서 기사 본문과 이미지를 추출하여 저장"""
     print(f"🔗 URL 크롤링 시작: {url}")
     try:
         article = Article(url)
@@ -42,7 +40,6 @@ def crawl_url_and_save(url):
             "url": url
         }
         
-        # 캐시 파일로 저장 (Writer와 Artist가 읽을 수 있게)
         with open("article_cache.json", "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
             
@@ -72,9 +69,9 @@ def main():
             break
 
         topic = ""
-        mode = "video"       # 기본값
-        language = "ko"      # 기본값
-
+        mode = "video"
+        language = "ko"
+        
         # ------------------------------------
         # 메뉴별 설정
         # ------------------------------------
@@ -88,12 +85,12 @@ def main():
             
         elif choice == '3':
             mode = "news_video"
-            topic = get_user_input("검색할 뉴스 키워드 (Enter치면 'Today's Top News'): ")
+            topic = get_user_input("검색할 뉴스 키워드 (Enter = Today's Top News): ")
             if not topic: topic = "Today's Top News"
             
         elif choice == '4':
             mode = "news_shorts"
-            topic = get_user_input("검색할 뉴스 키워드 (Enter치면 'Today's Top News'): ")
+            topic = get_user_input("검색할 뉴스 키워드 (Enter = Today's Top News): ")
             if not topic: topic = "Today's Top News"
             
         elif choice == '5':
@@ -102,44 +99,43 @@ def main():
             if not url.startswith("http"):
                 print("⚠️ 올바른 URL이 아닙니다.")
                 continue
-            
-            # 1. URL 크롤링 선행
             if not crawl_url_and_save(url):
                 continue
-            topic = "URL_ARTICLE" # Writer가 캐시파일을 읽도록 유도
+            topic = "URL_ARTICLE"
             
         else:
             print("⚠️ 잘못된 입력입니다.")
             continue
 
-        # 언어 설정 (공통)
-        lang_input = get_user_input("언어 선택 (Enter=한국어, en=영어): ")
-        if lang_input.lower() == "en": language = "en"
+        # ------------------------------------
+        # [수정] 언어 선택 (1: 한국어, 2: 영어)
+        # ------------------------------------
+        print("\n🌐 언어 선택")
+        print("1. 한국어 (Korean) [기본]")
+        print("2. 영어 (English)")
+        lang_choice = get_user_input("선택 (1/2): ")
+        
+        if lang_choice == '2':
+            language = "en"
+        else:
+            language = "ko"
 
-        # 성우 성별 (공통)
-        gender_input = get_user_input("성우 성별 (Enter=여성, m=남성): ")
-        gender = "m" if gender_input.lower() == "m" else "f"
+        # ------------------------------------
+        # [수정] 성우 성별 선택 (1: 여성, 2: 남성)
+        # ------------------------------------
+        print("\n🎙️ 성우 목소리 선택")
+        print("1. 여성 (Female) [기본]")
+        print("2. 남성 (Male)")
+        gender_choice = get_user_input("선택 (1/2): ")
+        
+        gender = "m" if gender_choice == '2' else "f"
 
-        print(f"\n🚀 작업 시작! [Mode: {mode} | Topic: {topic} | Lang: {language}]")
+        print(f"\n🚀 작업 시작! [Mode: {mode} | Topic: {topic[:30]}... | Lang: {language} | Voice: {gender}]")
 
-        # ==================================================
         # 파이프라인 실행
-        # ==================================================
-        
-        # 1. Writer (대본 작성)
-        # 인자: [주제] [모드] [언어]
         if not run_step("writer.py", [topic, mode, language]): continue
-        
-        # 2. Artist (이미지 생성/검색)
-        # 인자: [모드]
         if not run_step("artist.py", [mode]): continue
-        
-        # 3. Narrator (더빙)
-        # 인자: [언어] [성별]
         if not run_step("narrator.py", [language, gender]): continue
-        
-        # 4. Editor (편집)
-        # 인자: [모드]
         if not run_step("editor.py", [mode]): continue
         
         print("\n✨ 모든 작업이 성공적으로 완료되었습니다!")
