@@ -8,16 +8,14 @@ from PIL import Image, ImageFont, ImageDraw
 import shutil
 from datetime import datetime
 
-# MoviePy Import
+# MoviePy Import (v1.0.3 호환)
 try:
-    from moviepy import *
+    from moviepy.editor import *
     from moviepy.video.tools.subtitles import SubtitlesClip
 except ImportError:
-    try:
-        from moviepy.editor import *
-    except ImportError:
-        print("❌ moviepy 라이브러리를 찾을 수 없습니다.")
-        sys.exit(1)
+    print("❌ moviepy 라이브러리를 찾을 수 없습니다.")
+    print("   👉 설치 방법: pip install moviepy")
+    sys.exit(1)
 
 # 폰트 경로 정의 (Windows 기준)
 FONT_EN = "C:/Windows/Fonts/arialbd.ttf"
@@ -112,26 +110,6 @@ def create_source_label(text, font_path):
     draw.text((x, y), text, font=font, fill='white')
     return ImageClip(np.array(img))
 
-def process_bumper_clip(path, target_size):
-    """인트로/아웃트로 영상을 안전하게 로드하고 리사이즈하는 함수"""
-    try:
-        clip = VideoFileClip(path)
-        # 배경 블랙 생성
-        bg = ColorClip(size=target_size, color=(0,0,0), duration=clip.duration)
-        
-        # 가로 폭에 맞춰 리사이즈 (Aspect Ratio 유지)
-        clip_resized = clip.resized(width=target_size[0])
-        
-        # 만약 리사이즈된 높이가 타겟보다 크면? -> 높이에 맞춤 (Fit)
-        if clip_resized.h > target_size[1]:
-            clip_resized = clip.resized(height=target_size[1])
-            
-        # 중앙 배치 합성
-        return CompositeVideoClip([bg, clip_resized.with_position("center")])
-    except Exception as e:
-        print(f"⚠️ Bumper Clip 로드 실패 ({path}): {e}")
-        return None
-
 def create_video():
     mode = "video"
     if len(sys.argv) > 1: mode = sys.argv[1]
@@ -142,6 +120,8 @@ def create_video():
     story_path = "story.json"
     image_dir = "images"
     audio_dir = "audio"
+    intro_path = "assets/intro.mp4"
+    outro_path = "assets/outro.mp4"
     
     if not os.path.exists(story_path):
         print("❌ 오류: story.json 파일이 없습니다.")
@@ -164,50 +144,92 @@ def create_video():
 
     print(f"=== 편집(Editor) 시작 (Mode: {mode}) ===")
     
-    main_clips = []
+    # 3단 분리 저장소
+    intro_clip_final = None
+    outro_clip_final = None
+    body_clips = []
+
     final_size = (720, 1280) if is_shorts else (1280, 720)
 
-    # 1. 메인 컨텐츠 생성
     for i, scene in enumerate(scenes):
         idx = i + 1
         img_path = os.path.join(image_dir, f"image_{idx}.png")
         aud_path = os.path.join(audio_dir, f"audio_{idx}.mp3")
         
-        if not os.path.exists(img_path) or not os.path.exists(aud_path):
-            print(f"⚠️ 리소스 누락 (Scene {idx}), 건너뜀.")
+        if not os.path.exists(aud_path):
+            print(f"⚠️ 오디오 누락 (Scene {idx}), 건너뜀.")
             continue
-            
+
         print(f"🎬 Scene {idx} 합성 중...")
         
         audio_clip = AudioFileClip(aud_path)
         duration = audio_clip.duration
-        raw_img_clip = ImageClip(img_path).with_duration(duration)
         
-        layers = []
+        visual_clip = None
+        is_video_asset = False
+        is_intro_scene = (i == 0 and is_shorts and is_news)
+        is_outro_scene = (i == len(scenes) - 1 and is_shorts and is_news)
 
+        # ----------------------------------------------------------------
+        # 1. 비디오/이미지 소스 결정
+        # ----------------------------------------------------------------
+        if is_intro_scene and os.path.exists(intro_path):
+            print("   👉 Intro 영상 적용 (Looping)")
+            vid = VideoFileClip(intro_path)
+            # 오디오 제거 후 루핑 (나래이션과 섞임 방지)
+            visual_clip = vid.without_audio().loop(duration=duration)
+            is_video_asset = True
+
+        elif is_outro_scene and os.path.exists(outro_path):
+            print("   👉 Outro 영상 적용 (Trimming)")
+            vid = VideoFileClip(outro_path)
+            # 오디오 제거
+            vid = vid.without_audio()
+            
+            if vid.duration > duration:
+                visual_clip = vid.subclip(0, duration)
+            else:
+                visual_clip = vid.set_duration(duration)
+            is_video_asset = True
+        
+        else:
+            if os.path.exists(img_path):
+                visual_clip = ImageClip(img_path).set_duration(duration)
+            else:
+                print(f"⚠️ 이미지 누락 (Scene {idx})")
+                continue
+
+        # ----------------------------------------------------------------
+        # 2. 레이아웃 합성
+        # ----------------------------------------------------------------
+        layers = []
+        
         if is_shorts:
-            # Shorts 레이아웃 (4:3 이미지 + 블랙박스)
-            black_bg = ColorClip(size=final_size, color=(0, 0, 0)).with_duration(duration)
+            # 검은 배경
+            black_bg = ColorClip(size=final_size, color=(0, 0, 0)).set_duration(duration)
             layers.append(black_bg)
             
-            resized_img = raw_img_clip.resized(width=720)
-            centered_img = resized_img.with_position("center")
-            layers.append(centered_img)
+            # 리사이즈 및 중앙 정렬
+            resized_visual = visual_clip.resize(width=720)
+            centered_visual = resized_visual.set_position("center")
+            layers.append(centered_visual)
+            
         else:
-            # Video 레이아웃 (꽉 찬 화면)
-            resized_img = raw_img_clip.resized(width=1280)
-            layers.append(resized_img)
+            # Video 모드
+            resized_visual = visual_clip.resize(width=1280)
+            layers.append(resized_visual)
 
-        # 출처 표시
-        img_filename = f"image_{idx}.png"
-        if img_filename in image_sources:
-            source_text = f"Source: {image_sources[img_filename]}"
-            source_clip = create_source_label(source_text, FONT_EN)
-            source_y = 50 if is_shorts else 20
-            source_clip = source_clip.with_position(("right", source_y)).with_duration(duration)
-            layers.append(source_clip)
+        # 출처 표시 (이미지인 경우에만, Intro/Outro 제외)
+        if not is_video_asset:
+            img_filename = f"image_{idx}.png"
+            if img_filename in image_sources:
+                source_text = f"Source: {image_sources[img_filename]}"
+                source_clip = create_source_label(source_text, FONT_EN)
+                source_y = 50 if is_shorts else 20
+                source_clip = source_clip.set_position(("right", source_y)).set_duration(duration)
+                layers.append(source_clip)
 
-        # 자막 표시 (Shorts만)
+        # 자막 표시 (Scene별 자막)
         if is_shorts:
             narration = scene.get("narration", "")
             if narration:
@@ -215,53 +237,56 @@ def create_video():
                     narration, fontsize=45, color='white', highlight_color='yellow', 
                     max_width=650
                 )
-                txt_clip = txt_clip.with_position(("center", 950)).with_duration(duration)
+                txt_clip = txt_clip.set_position(("center", 950)).set_duration(duration)
                 layers.append(txt_clip)
 
-        composite = CompositeVideoClip(layers, size=final_size).with_audio(audio_clip)
-        main_clips.append(composite)
+        # 개별 Scene 최종 합성
+        scene_composite = CompositeVideoClip(layers, size=final_size).set_audio(audio_clip)
 
-    if not main_clips:
-        print("❌ 생성된 클립이 없습니다.")
+        # ----------------------------------------------------------------
+        # 3. 클립 분류 (Intro / Body / Outro)
+        # ----------------------------------------------------------------
+        if is_intro_scene:
+            intro_clip_final = scene_composite
+        elif is_outro_scene:
+            outro_clip_final = scene_composite
+        else:
+            body_clips.append(scene_composite)
+
+    if not body_clips:
+        print("❌ 본문 클립이 생성되지 않았습니다.")
         return
 
-    print("🎞️ 메인 컨텐츠 병합 중...")
-    main_body_clip = concatenate_videoclips(main_clips, method="compose")
+    # ----------------------------------------------------------------
+    # 4. 최종 연결 (Concatenate) - 순서 보장 및 오버레이 분리
+    # ----------------------------------------------------------------
+    print("🎞️ 클립 병합 및 타이틀 적용 중...")
     
-    # [Shorts 전용] 타이틀 오버레이 (영상 전체에 적용)
+    # [1] 본문 병합
+    body_concat = concatenate_videoclips(body_clips, method="compose")
+    
+    # [2] 본문에만 타이틀 오버레이 적용
     if is_shorts and is_news:
-        print("📝 타이틀 오버레이 추가...")
+        print("   📝 본문에만 타이틀 적용")
         title_clip = create_highlighted_text_clip(
             title_text, fontsize=50, color='white', highlight_color='#00ff00',
             is_title=True, max_width=680
         )
-        title_clip = title_clip.with_position(("center", 100)).with_duration(main_body_clip.duration)
-        main_body_clip = CompositeVideoClip([main_body_clip, title_clip], size=final_size)
-
-    # ----------------------------------------------------
-    # [Intro / Outro 결합 로직]
-    # ----------------------------------------------------
+        title_clip = title_clip.set_position(("center", 100)).set_duration(body_concat.duration)
+        body_concat = CompositeVideoClip([body_concat, title_clip], size=final_size)
+    
+    # [3] 최종 시퀀스 조립: Intro -> Body -> Outro
     final_sequence = []
     
-    # Intro 추가 (뉴스 쇼츠일 때만)
-    if is_shorts and is_news and os.path.exists("assets/intro.mp4"):
-        print("🎬 Intro 영상 추가 중...")
-        intro_clip = process_bumper_clip("assets/intro.mp4", final_size)
-        if intro_clip:
-            final_sequence.append(intro_clip)
+    if intro_clip_final:
+        final_sequence.append(intro_clip_final)
+        
+    final_sequence.append(body_concat)
     
-    # 메인 컨텐츠 추가
-    final_sequence.append(main_body_clip)
-    
-    # Outro 추가 (뉴스 쇼츠일 때만)
-    if is_shorts and is_news and os.path.exists("assets/outro.mp4"):
-        print("🎬 Outro 영상 추가 중...")
-        outro_clip = process_bumper_clip("assets/outro.mp4", final_size)
-        if outro_clip:
-            final_sequence.append(outro_clip)
+    if outro_clip_final:
+        final_sequence.append(outro_clip_final)
 
-    print("🚀 최종 영상 시퀀스 연결 중...")
-    final_output_clip = concatenate_videoclips(final_sequence, method="compose")
+    final_clip = concatenate_videoclips(final_sequence, method="compose")
 
     # 저장
     output_dir = "results"
@@ -276,9 +301,9 @@ def create_video():
     output_path = os.path.join(output_dir, filename_timestamp)
     latest_path = os.path.join(output_dir, filename_latest)
     
-    print(f"💾 렌더링 시작: {output_path}")
+    print(f"🚀 렌더링 시작: {output_path}")
     
-    final_output_clip.write_videofile(
+    final_clip.write_videofile(
         output_path, 
         fps=24, 
         codec="libx264", 

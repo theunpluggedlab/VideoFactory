@@ -1,32 +1,77 @@
 [
   {
-    "scene": 1,
-    "setting": "Flash News Bite 스튜디오 - 밝고 미래지향적인 배경",
-    "narration": "Flash News Bite입니다. 오늘 우리는 인공지능의 미래에 대해 이야기해 보겠습니다. AI는 이미 우리 삶의 많은 부분에 스며들어 있지만, 앞으로는 더욱더 혁신적인 변화를 가져올 것입니다."
-  },
-  {
-    "scene": 2,
-    "setting": "AI 연구실 - 과학자들이 컴퓨터 앞에서 작업하는 모습",
-    "narration": "전문가들은 AI가 의료, 교육, 교통 등 다양한 분야에서 획기적인 발전을 이끌 것이라고 예측합니다. 예를 들어, AI는 질병을 조기에 진단하고 맞춤형 치료법을 개발하는 데 도움을 줄 수 있습니다."
-  },
-  {
-    "scene": 3,
-    "setting": "자율 주행 자동차가 도시를 달리는 모습",
-    "narration": "자율 주행 기술은 교통 체증을 줄이고 사고를 예방하며, 이동 약자들에게 편리함을 제공할 것입니다. AI는 또한 에너지 효율성을 높이고 환경 문제를 해결하는 데에도 기여할 수 있습니다."
-  },
-  {
-    "scene": 4,
-    "setting": "AI 로봇이 학생들에게 맞춤형 교육을 제공하는 모습",
-    "narration": "교육 분야에서는 AI가 학생 개개인의 학습 속도와 스타일에 맞춰 맞춤형 교육을 제공할 수 있습니다. 이를 통해 학습 효과를 극대화하고, 모든 학생이 잠재력을 최대한 발휘할 수 있도록 돕습니다."
-  },
-  {
-    "scene": 5,
-    "setting": "다양한 AI 기술이 적용된 미래 도시의 모습",
-    "narration": "하지만 AI의 발전은 윤리적인 문제와 일자리 감소와 같은 사회적인 문제도 야기할 수 있습니다. 이러한 문제들을 해결하기 위해 우리는 AI 개발과 활용에 대한 신중한 접근이 필요합니다."
-  },
-  {
-    "scene": 6,
-    "setting": "Flash News Bite 스튜디오",
-    "narration": "AI의 미래는 밝지만, 책임감 있는 개발과 활용이 중요합니다. Flash News Bite는 앞으로도 AI의 발전과 관련된 다양한 소식을 전달해 드리겠습니다."
+    "title": "Trump's GOP Grip Weakening? Congress Chaos! #Shorts #Trump #Politics",
+    "description": "Is *Trump's* influence over the GOP in Congress slipping? Get the latest breakdown in this Flash News Bite! \n\nRecent events reveal growing divisions within the Republican party. A shrinking House majority and Senate mavericks are challenging *Trump's* agenda, impacting key issues like foreign policy and health care. Will these internal conflicts derail *Trump's* legislative goals, especially with the upcoming midterm elections looming?\n\nThe article highlights instances of Republican lawmakers defying the White House, showcasing the challenges Speaker Johnson faces in maintaining party unity. From the Epstein Files Transparency Act to disagreements on health care subsidies and military action in Venezuela and Greenland, the GOP is grappling with internal discord. Can *Trump* regain control, or are these cracks a sign of a larger power shift within the party?\n\nWhat do you think? Is this the beginning of the end for *Trump's* control over the GOP?\n\n👉 Hit LIKE\n👉 SUBSCRIBE\n👉 SHARE\n\n#Trump #GOP #Congress #Politics #News #BreakingNews #FlashNewsBite #Midterms #SpeakerJohnson",
+    "hashtags": "#Trump #GOP #Congress #Politics #News #BreakingNews #FlashNewsBite #Midterms #SpeakerJohnson",
+    "scenes": [
+      {
+        "scene": 1,
+        "narration": "Welcome to Flash News Bite! Is *Trump's* grip on the GOP in Congress loosening?",
+        "image_prompt": "Flash News Bite logo, news studio background, professional, 3d render"
+      },
+      {
+        "scene": 2,
+        "narration": "Republicans control Congress, but the House majority is razor-thin. Unexpected vacancies have reduced the GOP's margin to just two votes.",
+        "image_prompt": "U.S. Capitol Building, wide shot, daytime"
+      },
+      {
+        "scene": 3,
+        "narration": "*Trump* acknowledged the shrinking majority, saying, \"You can’t be tough when you have a majority of three.\"",
+        "image_prompt": "Donald Trump speaking at a podium, serious expression"
+      },
+      {
+        "scene": 4,
+        "narration": "Cracks are showing. Some Republicans defied the White House on issues like the Epstein Files Transparency Act.",
+        "image_prompt": "Jeffrey Epstein's photo, black and white, serious"
+      },
+      {
+        "scene": 5,
+        "narration": "House Republicans also crossed party lines to extend health care subsidies that top Republicans don't support.",
+        "image_prompt": "Healthcare bill document, close-up"
+      },
+      {
+        "scene": 6,
+        "narration": "Speaker Johnson faces challenges controlling legislation. Moderate and conservative wings clash.",
+        "image_prompt": "Mike Johnson speaking at a press conference, concerned expression"
+      },
+      {
+        "scene": 7,
+        "narration": "In the Senate, Republicans hold a slightly larger majority, but *Trump's* control is still tested on issues like healthcare and foreign policy.",
+        "image_prompt": "U.S. Senate chamber, gavel in foreground"
+      },
+      {
+        "scene": 8,
+        "narration": "Five Senate Republicans angered *Trump* by advancing a measure to block military action in Venezuela.",
+        "image_prompt": "Map of Venezuela, highlighted in red"
+      },
+      {
+        "scene": 9,
+        "narration": "Some GOP leaders oppose *Trump's* idea of acquiring Greenland, drawing a red line against military action against Denmark.",
+        "image_prompt": "Map of Greenland, highlighted, with a red line drawn across it"
+      },
+      {
+        "scene": 10,
+        "narration": "Democrats are strategizing to exploit Republican discontent over Greenland, testing party unity.",
+        "image_prompt": "Democratic senators strategizing, serious expressions"
+      },
+      {
+        "scene": 11,
+        "narration": "Despite challenges, Speaker Johnson insists the House is \"totally in control.\" Is he right?",
+        "image_prompt": "Mike Johnson smiling confidently, Capitol Building in background"
+      },
+      {
+        "scene": 12,
+        "narration": "Stay informed with Flash News Bite! Like, Subscribe, and Comment to share your thoughts!",
+        "image_prompt": "YouTube Subscribe button and Like icon, Flash News Bite theme, neon lighting, high quality"
+      }
+    ],
+    "social_posts": {
+      "youtube_title": "Trump's GOP Control Fading? Congress in Chaos! #Shorts #Trump",
+      "youtube_description": "Is Trump losing his grip on the GOP? Recent divisions in Congress are raising questions. Get the full story on Flash News Bite!\n\nExplore how a shrinking House majority and Senate disagreements are challenging Trump's agenda. Will these internal conflicts derail his legislative goals?\n\nWhat do you think? Is this the end of Trump's control?\n\n👉 Hit LIKE\n👉 SUBSCRIBE\n👉 SHARE\n\n#Trump #GOP #Congress #Politics #News #BreakingNews #FlashNewsBite",
+      "x_post": "Is *Trump's* control over the GOP slipping? 🤔 Congress is facing internal divisions! House majority shrinking, Senate dissent rising. Will this impact *Trump's* agenda? #Trump #GOP #Congress #Politics",
+      "threads_post": "So, is *Trump's* grip on the GOP in Congress starting to loosen? It's getting complicated! The House majority is shrinking, and Senate Republicans are showing some independent streaks. What does this mean for upcoming legislation and the midterm elections? Let's discuss! #Trump #GOP #Congress #Politics",
+      "instagram_caption": "Is *Trump's* influence waning in Congress? 🚨 The GOP is facing internal divisions and a shrinking House majority. Is this the beginning of the end for *Trump's* control? Sound off in the comments 👇\n❤️ Save this post\n💬 Drop your thoughts\n#Trump #GOP #Congress #Politics #News #BreakingNews #FlashNewsBite #Midterms #CapitolHill #Government",
+      "tiktok_caption": "Trump losing GOP control? 😳 Watch till the end! #fyp #foryou #breakingnews #trump #politics"
+    }
   }
 ]

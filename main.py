@@ -16,7 +16,7 @@ def run_step(step_name, script_name, args=[]):
     print(f"🎬 [Step: {step_name}] 시작합니다...")
     print(f"{'='*50}\n")
     
-    # [환경변수 설정] 버퍼링 없이 즉시 출력 (Stuck 방지)
+    # 환경 변수 설정 (버퍼링 없이 즉시 출력)
     current_env = os.environ.copy()
     current_env["PYTHONUNBUFFERED"] = "1"
     
@@ -37,7 +37,6 @@ def main():
     print(f"{'='*60}\n")
 
     try:
-        # flush=True로 즉시 출력 보장
         print("[제작 모드 선택]", flush=True)
         print("1. 창작 비디오 (16:9 가로)", flush=True)
         print("2. 창작 쇼츠 (9:16 세로)", flush=True)
@@ -70,19 +69,58 @@ def main():
             if not url: sys.exit(1)
                 
             print(f"🕷️ 기사 분석 중... ({url})")
+            
+            # [수정] 크롤링 시도 -> 실패 시 수동 입력 로직으로 연결
             try:
                 config = Config()
-                config.browser_user_agent = 'Mozilla/5.0'
+                # 봇 차단 회피용 헤더 강화
+                config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                config.request_timeout = 10
+                
                 article = Article(url, config=config)
-                article.download(); article.parse()
+                article.download()
+                article.parse()
+                
+                if not article.text or len(article.text) < 50:
+                    raise Exception("본문 추출 실패 (내용 없음)")
                 
                 images = list(article.images) if article.images else []
                 article_data = {"title": article.title, "text": article.text, "images": images}
+                
                 with open("article_cache.json", "w", encoding="utf-8") as f:
                     json.dump(article_data, f, ensure_ascii=False, indent=2)
-            except:
-                print("❌ 크롤링 실패. 수동 입력 필요.")
-                sys.exit(1)
+                print("✅ 기사 데이터 저장 완료 (article_cache.json)")
+                
+            except Exception as e:
+                print(f"\n❌ 자동 수집 실패 ({e})")
+                print("⚠️ 보안이 강력한 사이트거나 URL 오류입니다. 수동 입력 모드로 전환합니다.")
+                print("-" * 40)
+                
+                manual_title = input("📝 기사 제목을 입력하세요: ").strip()
+                if not manual_title:
+                    print("❌ 제목이 없습니다. 종료합니다.")
+                    sys.exit(1)
+                    
+                print("📝 기사 본문을 입력하세요 (복사 후 붙여넣기, 입력 끝나면 Enter 두 번):")
+                lines = []
+                while True:
+                    line = input()
+                    if not line: break
+                    lines.append(line)
+                manual_text = "\n".join(lines)
+                
+                if len(manual_text) < 10:
+                    print("❌ 내용이 너무 짧습니다. 종료합니다.")
+                    sys.exit(1)
+                    
+                article_data = {
+                    "title": manual_title,
+                    "text": manual_text,
+                    "images": [] 
+                }
+                with open("article_cache.json", "w", encoding="utf-8") as f:
+                    json.dump(article_data, f, ensure_ascii=False, indent=2)
+                print("✅ 수동 데이터 저장 완료.")
 
         else:
             mode = "video"
