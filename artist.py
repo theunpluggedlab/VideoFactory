@@ -32,8 +32,8 @@ print(f"🔑 [Artist] 로드된 Gemini API 키 개수: {len(GEMINI_KEYS)}개")
 OUTPUT_DIR = "images"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# [설정] 3.0 모델 적용 (이미지 생성 시도)
-MODEL_NAME = "gemini-3-flash-preview"
+# [복구] 이미지 생성 가능한 모델은 2.0 Flash가 유일합니다.
+MODEL_NAME = "gemini-2.0-flash" 
 
 # 주요 뉴스 소스 리스트
 MAJOR_NEWS_SITES = [
@@ -170,7 +170,7 @@ def download_best_available_image(results, file_name, target_ratio):
 
 def generate_image(prompt, file_name):
     global current_key_index
-    print(f"🎨 AI 그리기 시도 (3.0)... ({prompt[:30]}...)")
+    print(f"🎨 AI 그리기 시도... ({prompt[:30]}...)")
     attempts = 0
     max_attempts = len(GEMINI_KEYS) * 2
     
@@ -225,7 +225,7 @@ def main():
     story_content = data[0] if isinstance(data, list) else data
     scenes = story_content.get("scenes", [])
     
-    print(f"=== 화가 에이전트 시작 (Experimental 3.0 Mode - 5 Keys) ===")
+    print(f"=== 화가 에이전트 시작 (Stable 2.0 Mode - 5 Keys) ===")
     
     image_sources = {}
     article_images = []

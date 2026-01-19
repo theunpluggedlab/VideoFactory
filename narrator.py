@@ -60,7 +60,7 @@ selected_gemini_voice = VOICE_DB[language][gender]["gemini"]
 selected_edge_voice = VOICE_DB[language][gender]["edge"]
 
 print(f"🎙️ 성우 설정: 언어={language}, 성별={gender}")
-print(f"   [Primary] Gemini 3.0 Preview: {selected_gemini_voice}")
+print(f"   [Primary] Gemini 2.0 Flash: {selected_gemini_voice}")
 print(f"   [Fallback] Edge TTS: {selected_edge_voice}")
 
 FFMPEG_EXE = imageio_ffmpeg.get_ffmpeg_exe()
@@ -103,13 +103,13 @@ def generate_audio_gemini(text, output_file):
     max_attempts = len(GEMINI_KEYS) * 2
     attempts = 0
     
-    # [설정] 3.0 모델 적용
-    MODEL_NAME = "gemini-3-flash-preview"
+    # [복구] 오디오 지원 모델은 2.0 Flash가 유일합니다.
+    MODEL_NAME = "gemini-2.0-flash"
     
     while attempts < max_attempts:
         current_key = GEMINI_KEYS[current_key_index]
         try:
-            print(f"   ⏳ [Gemini 3.0] 요청 중... (Key #{current_key_index+1})")
+            print(f"   ⏳ [Gemini 2.0] 요청 중... (Key #{current_key_index+1})")
             client = genai.Client(api_key=current_key)
             
             config = types.GenerateContentConfig(
@@ -121,7 +121,6 @@ def generate_audio_gemini(text, output_file):
                 )
             )
             
-            # 3.0 모델 호출
             response = client.models.generate_content(
                 model=MODEL_NAME, 
                 contents=text, 
@@ -145,12 +144,11 @@ def generate_audio_gemini(text, output_file):
             error_str = str(e)
             
             is_retryable = False
-            # 쿼터(429), 미지원(400), 서버오류(5xx) 모두 키 교체 대상
             if "429" in error_str or "RESOURCE" in error_str or "quota" in error_str.lower():
                 print(f"      ⚠️ [Key #{current_key_index+1}] 쿼터 초과. 다음 키로 이동합니다.")
                 is_retryable = True
             elif "400" in error_str or "INVALID" in error_str:
-                print(f"      ⚠️ [Key #{current_key_index+1}] 3.0 모델이 오디오를 미지원할 수 있습니다(400).")
+                print(f"      ⚠️ [Key #{current_key_index+1}] 모델 미지원/오류(400). 다음 키로 이동합니다.")
                 is_retryable = True
             elif "500" in error_str or "503" in error_str:
                 print(f"      ⚠️ [Key #{current_key_index+1}] 구글 서버 오류. 다음 키로 이동합니다.")
@@ -195,7 +193,7 @@ def main():
     story_content = data[0] if isinstance(data, list) else data
     scenes = story_content.get("scenes", [])
     
-    print(f"=== 성우 에이전트 시작 (Experimental 3.0 Mode - 5 Keys) ===")
+    print(f"=== 성우 에이전트 시작 (Stable 2.0 Mode - 5 Keys) ===")
     
     failed_count = 0
     
@@ -219,8 +217,8 @@ def main():
         raw_source_path = None
         if generate_audio_gemini(clean_text, temp_wav):
             raw_source_path = temp_wav
-            # 성공 시 쿼터 보호를 위해 3초 대기
-            print("      💤 최신 모델 보호 대기 (3s)...")
+            # 성공 시 쿼터 보호 대기
+            print("      💤 모델 보호 대기 (3s)...")
             time.sleep(3)
         
         # 2. 실패시 Edge TTS
