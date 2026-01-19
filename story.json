@@ -1,67 +1,42 @@
 [
   {
-    "title": "Trump's Greenland Bid Sparks NATO Crisis & EU Trade War! #Shorts #BreakingNews",
-    "description": "Geopolitical tensions are reaching a boiling point as President Trump escalates his pursuit of Greenland, citing national security and Arctic strategy. This move has triggered a massive rift within NATO and prompted a swift economic response from Europe.\n\nIn this update, we break down the €93 billion tariff threat from the EU and the IMF's latest global economic outlook. Plus, find out why Congress is pushing back against proposed science budget cuts in Washington.\n\nWhat do you think about the bid for Greenland? Let us know in the comments below!\n\n👉 Hit LIKE\n👉 SUBSCRIBE\n👉 SHARE\n\n#Greenland #Trump #NATO #TradeWar #BreakingNews #FlashNewsBite #Economy",
-    "hashtags": "#Greenland #Trump #NATO #TradeWar #BreakingNews #FlashNewsBite #Economy",
-    "scenes": [
-      {
-        "scene_number": 1,
-        "narration": "Welcome to Flash News Bite where we deliver the day's biggest stories with zero clutter.",
-        "image_prompt": "Flash News Bite logo, news studio background, professional, 3d render"
-      },
-      {
-        "scene_number": 2,
-        "narration": "President Trump is escalating his bid to acquire *Greenland* calling it a top *national security priority*.",
-        "image_prompt": "Map of the Arctic showing Greenland highlighted in red, high-tech digital interface style"
-      },
-      {
-        "scene_number": 3,
-        "narration": "This move has plunged *NATO* into what experts describe as its most severe crisis in history.",
-        "image_prompt": "NATO flag waving with a cracked glass overlay effect, dramatic lighting"
-      },
-      {
-        "scene_number": 4,
-        "narration": "The White House confirms the *US military* remains an option for securing the strategic territory to deter adversaries.",
-        "image_prompt": "US military aircraft flying over an icy Arctic landscape, cinematic wide shot"
-      },
-      {
-        "scene_number": 5,
-        "narration": "Meanwhile the *European Union* is preparing a massive economic retaliation against the United States.",
-        "image_prompt": "European Union flags in front of a modern government building, dusk lighting"
-      },
-      {
-        "scene_number": 6,
-        "narration": "EU officials are weighing *tariffs* on 93 billion euros of American goods as markets begin to tumble.",
-        "image_prompt": "Stock market ticker showing red downward trends, overlay of Euro and Dollar symbols"
-      },
-      {
-        "scene_number": 7,
-        "narration": "Despite the tension the *IMF* projects global growth will hold steady at 3.3 percent through 2026.",
-        "image_prompt": "International Monetary Fund building with a digital growth chart overlay"
-      },
-      {
-        "scene_number": 8,
-        "narration": "In Washington *Congress* is moving to block the President's steep *budget cuts* to federal science programs.",
-        "image_prompt": "The US Capitol building with digital icons representing science and technology"
-      },
-      {
-        "scene_number": 9,
-        "narration": "Experts warn these geopolitical shifts could permanently change international relations in the Arctic and beyond.",
-        "image_prompt": "A globe focusing on the North Pole with glowing strategic lines connecting continents"
-      },
-      {
-        "scene_number": 10,
-        "narration": "Stay ahead of the curve with Flash News Bite by liking and subscribing for your daily updates. Drop a comment with your thoughts on the Greenland situation.",
-        "image_prompt": "YouTube Subscribe button and Like icon, Flash News Bite theme, neon lighting, high quality"
-      }
-    ],
-    "social_posts": {
-      "youtube_title": "Trump's Greenland Bid Sparks NATO Crisis & EU Trade War! #Shorts #BreakingNews",
-      "youtube_description": "Trump's push for Greenland is shaking the global order. We cover the NATO fallout and the EU's €93B tariff threat.\n\nIn this update, we break down the €93 billion tariff threat from the EU and the IMF's latest global economic outlook.\n\nWhat do you think about the bid for Greenland?\n\n👉 Hit LIKE\n👉 SUBSCRIBE\n👉 SHARE\n\n#Greenland #Trump #NATO #TradeWar #BreakingNews #FlashNewsBite",
-      "x_post": "Trump's Greenland obsession hits a breaking point. NATO in crisis and the EU threatens €93B in tariffs. Is a trade war inevitable? 🌍📉 #BreakingNews #Greenland #NATO #TradeWar #FlashNewsBite",
-      "threads_post": "The geopolitical map is shifting fast. From Greenland's strategic value to a potential trade war with the EU, here is what you need to know today. Do you think the US should actually buy Greenland? 🧵👇 #WorldNews #Economy #Greenland #Trump",
-      "instagram_caption": "Global tensions are rising! 🚨 President Trump’s Greenland bid is causing a massive rift in NATO, while the EU prepares for economic battle with €93B in tariffs. ❤️ Save this post for updates! 💬 Drop your thoughts on this below! #BreakingNews #WorldNews #Greenland #EU #Economy",
-      "tiktok_caption": "Trump wants Greenland? 🇬🇱 NATO is panicking and the EU is firing back with tariffs. Watch till the end for the full breakdown! 😱 #fyp #foryou #breakingnews #greenland #trump #worldnews"
-    }
+    "scene": 1,
+    "narration": "평범한 오후, 6살 민준, 7살 태현, 그리고 6살 지훈이는 새로 산 포켓몬 카드 팩을 손에 들고 설레는 표정으로 옹기종기 모여 앉았어요.",
+    "visuals": "아이들이 포켓몬 카드 팩을 들고 기대에 찬 표정으로 앉아있는 모습. 밝은 햇살이 비치는 방 안."
+  },
+  {
+    "scene": 2,
+    "narration": "\"자, 하나, 둘, 셋!\" 동시에 카드 팩을 뜯는 아이들! 반짝이는 카드들이 모습을 드러냈어요.",
+    "visuals": "아이들이 동시에 카드 팩을 뜯는 모습. 카드들이 빛나는 효과."
+  },
+  {
+    "scene": 3,
+    "narration": "\"우와!\" 세 명 모두 놀라운 표정! 민준이는 루기아, 태현이는 칠색조, 지훈이는 레쿠쟈 스페셜 레어 카드를 뽑았어요!",
+    "visuals": "아이들이 각자 뽑은 스페셜 레어 카드를 들고 놀라는 모습. 카드 이미지를 클로즈업."
+  },
+  {
+    "scene": 4,
+    "narration": "그 순간, 카드에서 강렬한 빛이 뿜어져 나오더니… 펑! 눈부신 빛과 함께 포켓몬들이 현실 세계에 나타났어요!",
+    "visuals": "카드에서 빛이 뿜어져 나오며 포켓몬들이 실체화되는 모습. 웅장한 효과음."
+  },
+  {
+    "scene": 5,
+    "narration": "거대한 루기아, 칠색조, 레쿠쟈는 아이들 앞에 웅장한 자태를 드러냈고, 아이들은 믿을 수 없다는 듯 입을 쩍 벌렸죠.",
+    "visuals": "실제 크기로 나타난 포켓몬들의 모습. 아이들이 놀라워하는 표정."
+  },
+  {
+    "scene": 6,
+    "narration": "신기하게도 포켓몬들은 아이들에게 다가와 등을 내밀었어요. 마치 \"타라!\" 하는 듯한 몸짓이었죠.",
+    "visuals": "포켓몬들이 아이들에게 등을 내미는 모습. 아이들이 망설이는 모습."
+  },
+  {
+    "scene": 7,
+    "narration": "망설이던 아이들은 용기를 내어 포켓몬 등에 올라탔어요! 루기아는 바다 위를, 칠색조는 하늘을, 레쿠쟈는 구름 사이를 가르며 신나는 여행을 시작했어요!",
+    "visuals": "아이들이 포켓몬 등에 타고 하늘, 바다, 구름 사이를 여행하는 모습. 역동적인 카메라 앵글."
+  },
+  {
+    "scene": 8,
+    "narration": "세상을 누비는 아이들의 웃음소리가 끊이지 않았답니다! Flash News Bite!",
+    "visuals": "아이들이 포켓몬과 함께 세상을 여행하며 즐거워하는 모습. 마지막에 'Flash News Bite' 채널 로고와 함께 구독 버튼 표시."
   }
 ]

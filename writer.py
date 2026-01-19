@@ -197,11 +197,11 @@ def generate_story():
         """
 
     # ---------------------------------------------------------
-    # 3. 모델 실행 (Gemini 3.0 Flash Preview)
+    # 3. 모델 실행 (Gemini 2.0 Flash - 롤백)
     # ---------------------------------------------------------
     
-    # [설정] 3.0 모델 적용
-    MODEL_NAME = "gemini-3-flash-preview"
+    # [롤백] 3.0 Preview -> 2.0 Flash (안정성 확보)
+    MODEL_NAME = "gemini-2.0-flash"
     print(f"🤖 Gemini 모델 호출 중... (Model: {MODEL_NAME})")
     
     attempts = 0

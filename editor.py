@@ -136,7 +136,7 @@ def create_video():
         data = json.load(f)
     
     story_content = data[0] if isinstance(data, list) else data
-    title_text = story_content.get("title", "News Briefing")
+            title_text = story_content.get("title", "News Briefing")
     scenes = story_content.get("scenes", [])
     
     image_sources = {}
