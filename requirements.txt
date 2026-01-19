@@ -1,0 +1,11 @@
+google-generativeai
+google-genai
+python-dotenv
+requests
+moviepy
+pillow
+numpy
+edge-tts
+imageio-ffmpeg
+newspaper3k
+lxml_html_clean

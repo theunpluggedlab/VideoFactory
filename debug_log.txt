@@ -1,0 +1,6 @@
+=== Scene 1 이미지 재생성 시작 ===
+프롬프트: A lonely AI robot 'Ari' with human appearance sitt...
+
+--- 디버그 정보 ---
+Part Count: 1
+⚠️ API 호출 중 에러: Unknown field for Part: mime_type

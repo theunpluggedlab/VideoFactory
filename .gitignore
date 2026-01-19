@@ -1,0 +1,11 @@
+# Environment variables
+.env
+
+# Python compilation cache
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+env/
+.venv/
