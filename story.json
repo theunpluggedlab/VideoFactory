@@ -1,42 +1,48 @@
 [
   {
-    "scene": 1,
-    "narration": "Flash News Bite! 6살 민준, 7살 지훈, 그리고 6살 서준이! 용돈을 모아 포켓몬 카드 팩을 샀어요!",
-    "visuals": "아이들이 포켓몬 카드 팩을 들고 신나하는 모습. 각자 이름표를 달고 있다."
-  },
-  {
-    "scene": 2,
-    "narration": "두근거리는 마음으로 카드 팩 개봉! 엇, 민준이에게서 반짝이는 카드가!",
-    "visuals": "민준이가 카드 팩을 뜯고, 스페셜 레어 카드를 발견하고 놀라는 표정."
-  },
-  {
-    "scene": 3,
-    "narration": "지훈이도 질 수 없지! 와, 스페셜 레어 카드다!",
-    "visuals": "지훈이도 스페셜 레어 카드를 뽑고 환호하는 모습."
-  },
-  {
-    "scene": 4,
-    "narration": "서준이 마저 스페셜 레어 카드 당첨! 이게 무슨 일이야!",
-    "visuals": "서준이도 스페셜 레어 카드를 뽑고 깜짝 놀라는 모습. 세 명 모두 얼떨떨해 한다."
-  },
-  {
-    "scene": 5,
-    "narration": "갑자기 카드에서 빛이 나더니, 포켓몬들이 현실로 튀어나왔어요!",
-    "visuals": "카드에서 빛이 나면서 포켓몬 캐릭터들이 3D 모습으로 아이들 앞에 나타난다."
-  },
-  {
-    "scene": 6,
-    "narration": "포켓몬들은 아이들을 등에 태우고 하늘을 날아오르기 시작했어요!",
-    "visuals": "포켓몬들이 아이들을 등에 업고 하늘을 나는 모습. 아이들은 신기해하고 즐거워한다."
-  },
-  {
-    "scene": 7,
-    "narration": "\"우와!\" 아이들은 포켓몬들과 함께 멋진 세상을 여행하기 시작했어요! 신나는 어드벤쳐!",
-    "visuals": "세계 각지의 유명한 랜드마크 (예: 에펠탑, 만리장성) 위를 포켓몬들이 아이들을 태우고 날아다니는 장면."
-  },
-  {
-    "scene": 8,
-    "narration": "과연 이들의 여행은 어디로 향하게 될까요? Flash News Bite!",
-    "visuals": "아이들과 포켓몬들이 석양을 배경으로 어딘가로 향하는 뒷모습. \"To be continued...\" 텍스트 삽입."
+    "title": "애리조나 청소년 스포츠 경기에서 100명 규모 난투극 발생",
+    "hashtags": "#애리조나 #난투극 #청소년스포츠",
+    "scenes": [
+      {
+        "narration": "애리조나주 메사에서 열린 청소년 스포츠 경기에서 약 100명이 연루된 난투극이 발생해 경찰이 출동했습니다.",
+        "image_prompt": "Arizona Athletic Grounds in Mesa, soccer field, police presence"
+      },
+      {
+        "narration": "메사 경찰에 따르면, 사건은 일요일 오후 1시경 깃발 풋볼 경기 중 양 팀 선수 약 10명이 싸움을 시작하면서 발생했습니다.",
+        "image_prompt": "Flag football game, players clashing"
+      },
+      {
+        "narration": "싸움은 학부모와 관중이 개입하면서 확대되었습니다.",
+        "image_prompt": "Parents and spectators arguing on the sidelines of a sports field."
+      },
+      {
+        "narration": "ABC 피닉스 제휴사 KNXV가 촬영한 영상에는 경찰이 축구장으로 진입하고 관중들이 스포츠 단지를 떠나는 모습이 담겼습니다.",
+        "image_prompt": "Police vehicles on a soccer field, spectators walking away"
+      },
+      {
+        "narration": "현장에 있던 한 15세 선수는 약 30대의 경찰 차량이 있었으며, 경찰관들이 군중에게 떠나라고 지시했다고 KNXV에 전했습니다.",
+        "image_prompt": "Teenage football player giving interview near sports field"
+      },
+      {
+        "narration": "MLK 잼버리 스포츠 토너먼트 주최측인 레드 존 엘리트 토너먼트는 인스타그램에 사과문을 게시하며 안전이 최우선이라고 밝혔습니다.",
+        "image_prompt": "Red Zone Elite Tournaments apology post on Instagram"
+      },
+      {
+        "narration": "경찰은 정확한 싸움의 원인을 밝히지 않았으며, 축구 및 풋볼 토너먼트의 남은 모든 경기가 취소되었습니다.",
+        "image_prompt": "Canceled sports tournament sign"
+      },
+      {
+        "narration": "메사 경찰서를 포함해 총 70명의 경찰관이 현장에 출동했습니다. 부상자나 체포된 사람은 없었습니다.",
+        "image_prompt": "Multiple police officers at the scene of a youth sports event."
+      },
+      {
+        "narration": "메사 경찰은 상황을 신속하고 안전하게 통제하는 데 도움을 준 모든 기관에 감사를 표했습니다.",
+        "image_prompt": "Mesa Police Department emblem"
+      }
+    ],
+    "social_posts": {
+      "youtube_title": "애리조나 청소년 스포츠 경기에서 100명 규모 난투극 발생",
+      "youtube_description": "애리조나주 메사에서 열린 청소년 스포츠 경기에서 약 100명이 연루된 난투극이 발생했습니다. 경찰이 출동하여 상황을 진압했으며, 남은 모든 경기가 취소되었습니다. 자세한 내용은 영상을 통해 확인하세요."
+    }
   }
 ]

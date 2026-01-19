@@ -2,7 +2,8 @@ import os
 import sys
 import subprocess
 import json
-from newspaper import Article
+# [수정] Config 모듈 추가
+from newspaper import Article, Config
 
 def get_user_input(prompt):
     try:
@@ -27,11 +28,24 @@ def run_step(script_name, args=[]):
 
 def crawl_url_and_save(url):
     print(f"🔗 URL 크롤링 시작: {url}")
+    
+    # [핵심 수정] 403 에러 방지를 위한 브라우저 위장 설정
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    
+    config = Config()
+    config.browser_user_agent = user_agent
+    config.request_timeout = 15  # 타임아웃 넉넉하게
+    
     try:
-        article = Article(url)
+        # config 설정 추가하여 Article 객체 생성
+        article = Article(url, config=config)
         article.download()
         article.parse()
         
+        # 제목이나 본문이 비어있으면 실패로 간주
+        if not article.text or len(article.text) < 50:
+            raise Exception("본문을 가져오지 못했습니다 (보안 차단 또는 빈 페이지)")
+
         data = {
             "title": article.title,
             "text": article.text,
@@ -72,9 +86,6 @@ def main():
         mode = "video"
         language = "ko"
         
-        # ------------------------------------
-        # 메뉴별 설정
-        # ------------------------------------
         if choice == '1':
             mode = "video"
             topic = get_user_input("주제를 입력하세요 (예: 2050년의 서울): ")
@@ -99,40 +110,34 @@ def main():
             if not url.startswith("http"):
                 print("⚠️ 올바른 URL이 아닙니다.")
                 continue
+            
+            # 크롤링 실패하면 다시 메뉴로
             if not crawl_url_and_save(url):
+                print("⚠️ URL 처리에 실패했습니다. 다른 링크를 시도해보세요.")
                 continue
+                
             topic = "URL_ARTICLE"
             
         else:
             print("⚠️ 잘못된 입력입니다.")
             continue
 
-        # ------------------------------------
-        # [수정] 언어 선택 (1: 한국어, 2: 영어)
-        # ------------------------------------
+        # 언어 선택
         print("\n🌐 언어 선택")
         print("1. 한국어 (Korean) [기본]")
         print("2. 영어 (English)")
         lang_choice = get_user_input("선택 (1/2): ")
-        
-        if lang_choice == '2':
-            language = "en"
-        else:
-            language = "ko"
+        language = "en" if lang_choice == '2' else "ko"
 
-        # ------------------------------------
-        # [수정] 성우 성별 선택 (1: 여성, 2: 남성)
-        # ------------------------------------
+        # 성우 성별 선택
         print("\n🎙️ 성우 목소리 선택")
         print("1. 여성 (Female) [기본]")
         print("2. 남성 (Male)")
         gender_choice = get_user_input("선택 (1/2): ")
-        
         gender = "m" if gender_choice == '2' else "f"
 
         print(f"\n🚀 작업 시작! [Mode: {mode} | Topic: {topic[:30]}... | Lang: {language} | Voice: {gender}]")
 
-        # 파이프라인 실행
         if not run_step("writer.py", [topic, mode, language]): continue
         if not run_step("artist.py", [mode]): continue
         if not run_step("narrator.py", [language, gender]): continue

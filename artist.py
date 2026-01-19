@@ -3,7 +3,7 @@ import json
 import time
 from dotenv import load_dotenv
 import google.generativeai as genai
-from PIL import Image
+from PIL import Image, ImageDraw
 import io
 import requests
 import sys
@@ -30,21 +30,18 @@ current_key_index = 0
 print(f"🔑 [Artist] 로드된 Gemini API 키 개수: {len(GEMINI_KEYS)}개")
 
 OUTPUT_DIR = "images"
+ASSETS_DIR = "assets"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(ASSETS_DIR, exist_ok=True)
 
-# [복구] 이미지 생성 가능한 모델은 2.0 Flash가 유일합니다.
 MODEL_NAME = "gemini-2.0-flash" 
 
-# 주요 뉴스 소스 리스트
 MAJOR_NEWS_SITES = [
     "cnn.com", "foxnews.com", "usatoday.com", "reuters.com", "apnews.com",
     "bbc.com", "abcnews.go.com", "cbsnews.com", "nbcnews.com", "nytimes.com",
     "washingtonpost.com", "wsj.com", "bloomberg.com", "npr.org", "theguardian.com"
 ]
 
-# ---------------------------
-# 유틸리티 함수
-# ---------------------------
 def crop_center(pil_img, crop_width, crop_height):
     img_width, img_height = pil_img.size
     return pil_img.crop(((img_width - crop_width) // 2,
@@ -55,14 +52,12 @@ def crop_center(pil_img, crop_width, crop_height):
 def crop_to_aspect_ratio(pil_img, target_ratio):
     img_width, img_height = pil_img.size
     img_ratio = img_width / img_height
-    
     if img_ratio > target_ratio:
         new_width = int(img_height * target_ratio)
         new_height = img_height
     else:
         new_width = img_width
         new_height = int(img_width / target_ratio)
-        
     return crop_center(pil_img, new_width, new_height)
 
 def process_and_save_image(pil_img, save_path, target_ratio):
@@ -98,15 +93,27 @@ def is_blacklisted(url):
         if domain in url_lower: return True
     return False
 
-def create_dummy_image(file_name, width=1280, height=720):
+def create_fallback_image(file_name, target_ratio):
     save_path = os.path.join(OUTPUT_DIR, file_name)
-    img = Image.new('RGB', (width, height), color='black')
-    img.save(save_path)
-    print(f"⚫ 실패 대비 더미 이미지 생성: {save_path}")
+    default_img_path = os.path.join(ASSETS_DIR, "default_news.png")
+    
+    if os.path.exists(default_img_path):
+        try:
+            print(f"   🏞️ 기본 이미지(Fallback) 사용.")
+            with Image.open(default_img_path) as img:
+                if img.mode in ("RGBA", "P"): img = img.convert("RGB")
+                process_and_save_image(img, save_path, target_ratio)
+            return
+        except: pass
 
-# ---------------------------
-# 검색 및 다운로드 함수
-# ---------------------------
+    print(f"   🎨 비상용 그래픽 생성.")
+    w = 1080
+    h = int(w / target_ratio)
+    img = Image.new('RGB', (w, h), color=(20, 30, 60)) 
+    draw = ImageDraw.Draw(img)
+    draw.line([(0, h*0.8), (w, h*0.8)], fill=(40, 50, 80), width=10)
+    process_and_save_image(img, save_path, target_ratio)
+
 def search_google_images(query, num=30): 
     url = "https://google.serper.dev/images"
     headers = {'X-API-KEY': SERPER_API_KEY, 'Content-Type': 'application/json'}
@@ -139,17 +146,12 @@ def search_with_fallback(base_prompt, idx):
     selected_sites = random.sample(MAJOR_NEWS_SITES, 6)
     site_operators = " OR ".join([f"site:{site}" for site in selected_sites])
     forced_query = f"{base_prompt} {site_operators}"
-    print(f"   🔍 [Scene {idx}] 1차 검색 (Major Sites): '{forced_query[:60]}...'")
+    print(f"   🔍 [Scene {idx}] 1차 검색: '{forced_query[:60]}...'")
     results = search_google_images(forced_query, num=30)
     if results: return results
     
-    print(f"   🔄 [Scene {idx}] 1차 실패 -> 2차 검색 (General): '{base_prompt}'")
+    print(f"   🔄 [Scene {idx}] 2차 검색: '{base_prompt}'")
     results = search_google_images(base_prompt, num=30)
-    if results: return results
-    
-    expanded_query = f"{base_prompt} news photo high resolution real photo -watermark -logo"
-    print(f"   🔄 [Scene {idx}] 2차 실패 -> 3차 검색 (Expanded): '{expanded_query}'")
-    results = search_google_images(expanded_query, num=30)
     return results
 
 def download_best_available_image(results, file_name, target_ratio):
@@ -157,22 +159,21 @@ def download_best_available_image(results, file_name, target_ratio):
         url = item.get('imageUrl')
         if not url or is_blacklisted(url): continue
         if download_and_process_image(url, file_name, target_ratio):
-            print(f"      ✅ 원본 다운로드 성공 (Source: {urlparse(url).netloc})")
+            print(f"      ✅ 원본 다운로드 성공")
             return url
-    print("      ⚠️ 원본 확보 실패. 썸네일 탐색...")
     for item in results:
         thumb = item.get('thumbnailUrl')
         if not thumb: continue
         if download_and_process_image(thumb, file_name, target_ratio):
-            print(f"      ✅ 썸네일(고화질) 다운로드 성공")
+            print(f"      ✅ 썸네일 다운로드 성공")
             return thumb
     return None
 
 def generate_image(prompt, file_name):
     global current_key_index
-    print(f"🎨 AI 그리기 시도... ({prompt[:30]}...)")
+    print(f"🎨 AI 그리기 시도... ({prompt[:20]}...)")
     attempts = 0
-    max_attempts = len(GEMINI_KEYS) * 2
+    max_attempts = len(GEMINI_KEYS) * 3 
     
     while attempts < max_attempts:
         current_key = GEMINI_KEYS[current_key_index]
@@ -189,11 +190,11 @@ def generate_image(prompt, file_name):
             return False 
         except Exception as e:
             error_msg = str(e)
-            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "QuotaExceeded" in error_msg:
-                print(f"      ⚠️ [Key #{current_key_index+1}] 쿼터 초과! 다음 키로 교체...")
+            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                print(f"      ⚠️ [Key #{current_key_index+1}] 쿼터 초과! 10초 대기...")
+                time.sleep(10)
                 current_key_index = (current_key_index + 1) % len(GEMINI_KEYS)
                 attempts += 1
-                time.sleep(2)
                 continue
             else:
                 print(f"      ❌ 그리기 오류: {e}")
@@ -218,14 +219,32 @@ def main():
     if not os.path.exists(story_path):
         print(f"오류: {story_path} 없음.")
         return
-
-    with open(story_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    story_content = data[0] if isinstance(data, list) else data
-    scenes = story_content.get("scenes", [])
     
-    print(f"=== 화가 에이전트 시작 (Stable 2.0 Mode - 5 Keys) ===")
+    try:
+        with open(story_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except:
+        print("❌ JSON 읽기 실패")
+        return
+
+    # [핵심 수정] JSON 구조 유연하게 처리 (리스트 래핑 해제)
+    scenes = []
+    # 1. 리스트 안에 딕셔너리가 들어있는 경우 (Writer가 감싸서 줄 때)
+    if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict) and "scenes" in data[0]:
+        scenes = data[0]["scenes"]
+    # 2. 그냥 딕셔너리인 경우
+    elif isinstance(data, dict) and "scenes" in data:
+        scenes = data["scenes"]
+    # 3. 리스트 자체가 씬 목록인 경우
+    elif isinstance(data, list):
+        scenes = data
+
+    print(f"✅ 화가가 작업할 Scene 개수: {len(scenes)}")
+    if len(scenes) == 0:
+        print("⚠️ 경고: 작업할 Scene이 없습니다.")
+        return
+
+    print(f"=== 화가 에이전트 시작 (High Persistence Mode) ===")
     
     image_sources = {}
     article_images = []
@@ -240,14 +259,11 @@ def main():
         idx = i + 1
         base_prompt = scene.get("image_prompt")
         
-        # Intro 스킵 로직
         if is_shorts and is_news and i == 0 and os.path.exists("assets/intro.mp4"):
-            print(f"   ⏩ Scene {idx} (Intro): 이미지 다운로드 생략 (Use assets/intro.mp4)")
+            print(f"   ⏩ Scene {idx} (Intro): Skip")
             continue
-
-        # Outro 스킵 로직
         if is_shorts and is_news and i == len(scenes) - 1 and os.path.exists("assets/outro.mp4"):
-            print(f"   ⏩ Scene {idx} (Outro): 이미지 다운로드 생략 (Use assets/outro.mp4)")
+            print(f"   ⏩ Scene {idx} (Outro): Skip")
             continue
 
         if not base_prompt: continue
@@ -282,7 +298,7 @@ def main():
                         success = True
                     except: pass
         else: 
-            prompt = f"{base_prompt}, cinematic lighting, high quality"
+            prompt = f"{base_prompt}, cinematic lighting, high quality, 4k, detailed"
             if generate_image(prompt, file_name):
                 try:
                     with Image.open(os.path.join(OUTPUT_DIR, file_name)) as img:
@@ -291,10 +307,7 @@ def main():
                 except: pass
 
         if not success:
-            print(f"   ❌ Scene {idx} 최종 실패. 더미 사용.")
-            w = 720 if is_shorts else 1280
-            h = 1280 if is_shorts else 720
-            create_dummy_image(file_name, w, h)
+            create_fallback_image(file_name, target_ratio)
         
         time.sleep(1) 
 
